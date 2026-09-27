@@ -231,7 +231,4 @@ Challenge](https://community.fico.com/s/explainable-machine-learning-challenge).
 
 ## License
 
-No software license is asserted by this artifact. Add the authors' chosen
-license before publishing the repository. The HELOC data remains subject to its
-source terms.
-
+Omitted for anonymity  
