@@ -1,0 +1,108 @@
+project:
+  name: heloc_cgrr
+  # Relative paths resolve from the repository root.
+  root_dir: .
+  output_dir: outputs/heloc_cgrr
+  seed: 2027
+
+dataset:
+  name: heloc
+  path: data/heloc_dataset_v1.csv
+  target: RiskPerformance
+  label_mapping:
+    Bad: 0
+    Good: 1
+  positive_label: Good
+  sentinel_values: [-9, -8, -7]
+  sentinel_as_missing: true
+  add_missing_indicators: true
+
+splits:
+  train_bb: 0.60
+  val_bb: 0.10
+  sur: 0.10
+  refine: 0.10
+  eval: 0.10
+
+xgboost:
+  n_estimators: 800
+  max_depth: 4
+  learning_rate: 0.03
+  subsample: 0.85
+  colsample_bytree: 0.85
+  reg_lambda: 2.0
+  reg_alpha: 0.0
+  min_child_weight: 5
+  objective: binary:logistic
+  eval_metric: logloss
+  tree_method: hist
+  n_jobs: 8
+
+surrogate:
+  candidate_depths: [10, 15, 20]
+  min_samples_leaf: 40
+  complexity_penalty: 0.002
+  min_coverage: 0.95
+
+refinement:
+  method_name: Faithful-Refined
+  max_iterations: 8
+  beam_size: 3
+  weak_rule_count: 6
+  examples_per_rule: 8
+  epsilon: 0.0005
+  objective:
+    alpha_coverage: 0.02
+    lambda_complexity: 0.002
+    beta_conflict: 0.05
+  constraints:
+    max_rules: 64
+    max_avg_predicates: 8
+    max_total_predicates: 320
+    min_coverage: 0.90
+    max_conflict_rate: 0.05
+
+qwen:
+  # Model weights are not part of this repository. This identifier uses the
+  # Hugging Face cache and downloads the checkpoint only when it is absent.
+  # For an offline checkpoint, replace this value with $QWEN_MODEL_PATH and set
+  # local_files_only to true.
+  model_id: Qwen/Qwen3-8B
+  cache_dir:
+  local_files_only: false
+  max_new_tokens: 1200
+  temperature: 0.0
+  top_p: 1.0
+  dtype: bfloat16
+  device_map: auto
+  require_cuda: true
+
+proxy:
+  # Uses qwen.model_id and its device settings unless overridden here.
+  max_items_per_condition:
+  temperature: 0.0
+  max_new_tokens: 600
+
+local_explanations:
+  # The background distribution is fitted without evaluation rows.
+  background_split: sur
+  lime:
+    # Fixed across rows so the prompt never reveals the row-specific prediction.
+    reference_class: Good
+    num_features: 8
+    num_samples: 5000
+    discretize_continuous: true
+  anchors:
+    threshold: 0.95
+    delta: 0.1
+    tau: 0.15
+    batch_size: 100
+    coverage_samples: 1000
+    beam_size: 1
+    stop_on_first: true
+    disc_perc: [25, 50, 75]
+
+evaluation:
+  bootstrap_resamples: 10000
+  bootstrap_seed: 20271
+
